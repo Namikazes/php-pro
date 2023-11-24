@@ -2,41 +2,65 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-trait Trait1 {
-    public function test(): int
+class thereIsNoMethod extends Exception{}
+class User
+{
+    private string $name;
+    private int $age;
+    private string $email;
+
+    public function __call(string $name, array $arguments)
     {
-        return 1;
+        if(method_exists($this, $name)) {
+            $this->$name($arguments[0]);
+        } else {
+            throw new thereIsNoMethod("There is no such method", 422);
+        }
+    }
+
+    private function setName($name)
+    {
+        $this->name = $name;
+    }
+    private function setAge($age)
+    {
+        $this->age = $age;
+    }
+    private function setEmail($email)
+    {
+        $this->email = $email;
+    }
+
+    public function getAll()
+    {
+        return [
+            'name' => $this->name,
+            'age' => $this->age,
+            'email' => $this->email,
+        ];
     }
 }
 
-trait Trait2 {
-    public function test(): int
-    {
-        return 2;
-    }
+$user = new User();
+
+try{
+    $user->setName('Egor');
+    $user->setAge(19);
+    $user->setEmail('egorsitenko35@gmail.com');
+    $user->setFullName('Egor Shytenko');
+} catch (thereIsNoMethod $exception) {
+    d("Error" . $exception);
 }
 
-trait Trait3 {
-    public function test(): int
-    {
-        return 3;
-    }
+try{
+    $user->setFullName('Egor Shytenko');
+} catch (thereIsNoMethod $exception) {
+    d("Error" . $exception);
 }
 
-
-class Test {
-    use Trait1, Trait2, Trait3 {
-        Trait1::test insteadof Trait2, Trait3;
-        Trait2::test as test2;
-        Trait3::test as test3;
-    }
-
-    public function getSum(): int
-    {
-        return $this->test() + $this->test2() + $this->test3();
-    }
+try{
+    $getUser = $user->getAll();
+    d($getUser);
+} catch (thereIsNoMethod $exception) {
+    d("Error" . $exception);
 }
-
-$test = new Test();
-
-d($sum = $test->getSum());
